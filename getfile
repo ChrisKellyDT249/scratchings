@@ -1,0 +1,74 @@
+'''
+A program to download a file from the net, classify its contents & then generate a value based on those values
+Step 1 - Get Data (getfile()) - split into 85% training & 15% new data; create files for later processing
+Step 2 - Pre-Process Data (makeditionaries())
+Step 3 - Define features & get statistical probabilities (trainclassifier())
+Step 4 - Apply the learning algorithim
+Step 5 - Predict over remaining data
+'''
+
+import string, httplib2
+
+def getfile():
+    # this function gets the raw data & also creates a training file
+    # Variables to hold file URL (sourced from gettysburg file)
+    source_data_url = "http://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data"
+
+    # get the source data & create a training & test file set
+    try:
+        # The request method gives us http header information and the content as a bytes object.
+        h = httplib2.Http(".cache")
+        base_data_headers, base_data = h.request(source_data_url) # splits tuple into header & string
+        print(base_data_headers)
+        # --------------------------------------
+
+        # Make a list of lines by splitting on the newline character.
+        adult_data = base_data.decode().split("\n") # gets a list of strings
+        # count number of lines in file
+        line_count = 0
+        lines_over = 0
+        lines_under = 0
+        for line in adult_data:
+            line_count += 1
+            if line.find(">") > 0:
+                lines_over += 1
+            else:
+                lines_under += 1
+        print(line_count)
+        print("lines over...", lines_over)
+        print("lines under...",lines_under)
+        trainingpercent = line_count * 0.8
+        print("fraction of files that are over 50k....{}".format(lines_over/line_count))
+        #Create a training set file & a test set file
+
+        file = open("adult_data_training_set.txt", "w")
+        # Dividing file into user's % choice for training file
+
+        # Write training file
+        training_lines = 0
+        #file.write("Age, Workclass, fnlwgt N/A, Education N/a, Ed Num, Marital Status, Occupation, Relationship, Race,\
+        #           Sex, Cap Gain, Cap Loss, Hours per week, Native Country N/A, Outcome\n")
+        for line in adult_data:
+            training_lines = training_lines + 1
+            writeline = line + "\n"
+            file.write(writeline)
+            if training_lines > trainingpercent: #break when specified line is reached
+                break
+        file.close()
+
+        file = open("adult_data_test_set.txt", "w")
+        test_lines = 0
+        for line in adult_data:
+            test_lines += 1
+            if test_lines <= training_lines:
+                pass
+            else:
+                writeline = line + "\n"
+                file.write(writeline)
+        file.close()
+
+
+    except httplib2.HttpLib2Error as e:
+        print(e)
+    return # adult_data, base_data_headers, line_count,
+Enter file contents here
